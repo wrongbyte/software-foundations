@@ -1064,7 +1064,12 @@ Proof.
 Theorem plus_id_exercise : forall n m o : nat,
   n = m -> m = o -> n + m = m + o.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m o.
+  intros n_m_equal.
+  intros m_o_equal.
+  rewrite n_m_equal.
+  rewrite m_o_equal.
+  reflexivity. Qed.
 (** [] *)
 
 (** The [Admitted] command tells Coq that we want to skip trying
@@ -1112,7 +1117,12 @@ Proof.
 Theorem mult_n_1 : forall p : nat,
   p * 1 = p.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros p.
+  rewrite <- mult_n_Sm. 
+  rewrite <- mult_n_O.
+  simpl.
+  reflexivity.
+  Qed.
 
 (** [] *)
 
@@ -1304,7 +1314,13 @@ Qed.
 Theorem andb_true_elim2 : forall b c : bool,
   andb b c = true -> c = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros b c.
+  destruct c eqn:EqnC.
+  - reflexivity.
+  - intros H. rewrite <- H. destruct b eqn: EqnB.
+    + simpl. reflexivity.
+    + simpl. reflexivity.
+  Qed.
 (** [] *)
 
 (** Before closing the chapter, let's mention one final
