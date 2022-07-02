@@ -141,5 +141,109 @@ Qed.
 
 (* ################################################################# *)
 (** * Proofs Within Proofs *)
+(** Assert is a way to create a quick proof
+  about some statement, that is used in the goal
+  we are trying to prove. 
 
-    
+  Assert generates:
+  1 - A subgoal where we must prove the asserted fact
+  2 - A second subgoal where we can use the asserted 
+  fact to make progress on whatever we were trying to 
+  prove in the first place. 
+**)
+
+Theorem mult_0_plus' : forall n m : nat,
+  (0 + n) * m = n * m.
+Proof.
+  intros n m.
+  assert (H: 0 + n = n). { reflexivity. }
+  rewrite -> H.
+  reflexivity. Qed.
+
+Theorem plus_rearrange_firsttry : forall n m p q : nat,
+  (n + m) + (p + q) = (m + n) + (p + q).
+Proof.
+  intros n m p q.
+  (* We just need to swap (n + m) for (m + n)... seems
+     like add_comm should do the trick! *)
+  rewrite add_comm.
+  (* Doesn't work... Coq rewrites the wrong plus! :-( *)
+Abort.
+
+(** To use [add_comm] at the point where we need it, we can introduce
+    a local lemma stating that [n + m = m + n] (for the _particular_ [m]
+    and [n] that we are talking about here), prove this lemma using
+    [add_comm], and then use it to do the desired rewrite. *)
+
+Theorem plus_rearrange : forall n m p q : nat,
+  (n + m) + (p + q) = (m + n) + (p + q).
+Proof.
+  intros n m p q.
+  assert (H: n + m = m + n).
+  { rewrite add_comm. reflexivity. }
+  rewrite H. reflexivity.  Qed.
+
+
+(* ################################################################# *)
+(** * Formal vs. Informal Proof *)
+
+(* TODO *)
+
+
+(* ################################################################# *)
+(** * More Exercises *)
+
+(** In the theorem below, assert helps us
+  to change the order of elements; after 
+  the two rewrites, we get n + m + p = m + n + p
+  what is, we only need to change the positions
+  of m and n, so assert does it for us here.
+  Basically we use the same hypothesis defined
+  previously, but we are kind of telling
+  Coq how to replace stuff properly.**)
+
+Theorem add_shuffle3: forall n m p: nat,
+  n + (m + p) = m + (n + p).
+Proof.
+  intros n m p.  
+  rewrite add_assoc. 
+  rewrite add_assoc. 
+  assert (H: n + m = m + n).
+  { rewrite add_comm. reflexivity. }
+  rewrite H. reflexivity.
+Qed.
+
+
+(** Commutativity of multiplication **)
+
+(**
+  Before proving the commutativity of multiplication, we have
+  to prove that the multiplication distributes over addition.
+**)
+
+Theorem mul_dist: forall n m: nat,
+  n * (S m) = n + n * m.
+  intros n m.
+  induction n as [| n' IHn'].
+  - reflexivity.
+  - simpl. rewrite IHn'. 
+    rewrite add_shuffle3. 
+    reflexivity.
+  Qed.
+
+
+Theorem mul_comm: forall n m: nat,
+  m * n = n * m.
+Proof.
+  intros m n.
+  induction n as [| n' IHn'].
+  - simpl. rewrite mul_0_r. reflexivity.
+  - simpl. 
+    rewrite IHn'.
+    rewrite mul_dist. 
+    reflexivity.
+    Qed.
+
+
+
+
