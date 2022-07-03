@@ -244,6 +244,21 @@ Proof.
     reflexivity.
     Qed.
 
+(** 
+  The goal for the exercises below is to 
+  think about the necessity for the use of
+  simplification and rewriting, case analysis
+  (destruct) or if it also requires induction.
+ **)
 
+Check leb.
 
+(** Requires induction bc is an arbitrary number **)
+Theorem leb_refl: forall n: nat,
+  (n <=? n) = true.
+Proof.
+  induction n as [| n' IHn'].
+  - simpl. reflexivity.
+  - simpl. rewrite IHn'. reflexivity.
+  Qed.
 
