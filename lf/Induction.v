@@ -249,6 +249,10 @@ Proof.
   think about the necessity for the use of
   simplification and rewriting, case analysis
   (destruct) or if it also requires induction.
+  
+  My hypothesis: when the case is covered in the
+  definition, it can be checked with simpl, which
+  does an "unfolding".
  **)
 
 Check leb.
@@ -262,3 +266,132 @@ Proof.
   - simpl. rewrite IHn'. reflexivity.
   Qed.
 
+(** simpl, because this case is defined
+   **)
+
+Theorem zero_neqb_S : forall n:nat,
+  0 =? (S n) = false.
+Proof. (*simp: same as unfold eqb here*)
+  simpl. reflexivity.
+Qed.
+
+(** case analysis bc the match takes
+  the first argument first **)
+Theorem andb_false_r : forall b : bool,
+  andb b false = false.
+Proof.
+  destruct b.
+  - reflexivity.
+  - reflexivity.
+  Qed.
+
+
+(* Induction and rewrite (?) *)
+Theorem plus_leb_compat_l : forall n m p : nat,
+  n <=? m = true -> (p + n) <=? (p + m) = true.
+Proof.
+  intros n m p H.
+  induction p as [| p' IHp'].
+  - simpl. rewrite H. reflexivity.
+  - simpl. rewrite IHp'. reflexivity.
+  Qed.
+
+(* simpl, because this case is already defined in eqb *)
+Theorem S_neqb_0 : forall n:nat,
+  (S n) =? 0 = false.
+Proof.
+  simpl. reflexivity. Qed.
+
+(**
+  Needs induction, to create a hypothesis that
+  holds for both 0 and S n.
+**)
+
+Theorem mult_1_l : forall n:nat, 1 * n = n.
+Proof.
+  induction n as [| n' IHn'].
+  - reflexivity.
+  - simpl. rewrite add_comm. reflexivity.
+Qed. 
+
+(* Case analysis *)
+Theorem all3_spec : forall b c : bool,
+  orb
+    (andb b c)
+    (orb (negb b)
+         (negb c))
+  = true.
+Proof.
+  intros b c.
+  destruct b.
+  - destruct c.
+    + reflexivity.
+    + reflexivity.
+  - destruct c.
+    + reflexivity.
+    + reflexivity.
+  Qed.
+
+(* Rewrite with mult_dist after induction on n *)
+
+Theorem mult_plus_distr_r : forall n m p : nat,
+  (n + m) * p = (n * p) + (m * p).
+Proof.
+  intros n m p.
+  induction n as [| n' IHn'].
+  - simpl. reflexivity.
+  - simpl. rewrite IHn'.
+    rewrite add_assoc.
+    reflexivity.
+  Qed.
+
+(* Induction on n', rewrite *)
+Theorem mult_assoc : forall n m p : nat,
+  n * (m * p) = (n * m) * p.
+Proof.
+  intros n m p.
+  induction n as [| n' IHn'].
+  - reflexivity.
+  - simpl. rewrite IHn'.
+    rewrite mult_plus_distr_r.
+    reflexivity.
+  Qed.
+    
+(** [] *)
+
+Theorem eqb_refl: forall n: nat,
+  (n =? n) = true.
+Proof.
+  induction n as [| n' IHn'].
+  - reflexivity.
+  - simpl. rewrite IHn'. reflexivity.
+  Qed.
+
+(** 
+  We can specify a particular subterm to 
+  perform the rewrite using replace (t) with (u).
+
+  Previously, we have defined that n + m = m + n
+  with the use of the keyword "assert". Assert 
+  generates a hypothesis and a subgoal to prove
+  that hypothesis.
+  
+  By using replace, we edit the goal directly and
+  have to prove that this rewriting is possible
+  as a subgoal.
+**)
+
+Theorem add_shuffle3': forall n m p: nat,
+  n + (m + p) = m + (n + p).
+Proof.
+  intros n m p. 
+  rewrite add_assoc.
+  rewrite add_assoc.
+  replace (n + m) with (m + n).
+  - reflexivity.
+  - rewrite add_comm. reflexivity.
+  Qed.
+
+
+(** **** Exercise: 3 stars, standard, especially useful (binary_commute) **)
+(* TODO *)
