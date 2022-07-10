@@ -289,5 +289,67 @@ Example test_countoddmembers3:
   simpl. reflexivity. Qed.
 (** [] *)
 
+(** Advanced exercises - alternate **)
+(**
+
+Complete the following definition of alternate, which interleaves two lists into one, alternating between elements taken from the first list and elements from the second. See the tests below for more specific examples.
+(Note: one natural and elegant way of writing alternate will fail to satisfy Coq's requirement that all Fixpoint definitions be "obviously terminating." If you find yourself in this rut, look for a slightly more verbose solution that considers elements of both lists at the same time. One possible solution involves defining a new kind of pairs, but this is not the only way.) 
+
+**)
+
+(** here we will have to use the multiple pattern syntax
+**)
+Fixpoint alternate (l1 l2 : natlist) :natlist :=
+match l1, l2 with 
+  | [], [] => nil
+  | l1, [] => l1
+  | [], l2 => l2
+  | h1::t1, h2::t2 => h1 :: h2 :: (alternate t1 t2)
+  end. 
+
+
+Example test_alternate1:
+  alternate [1;2;3] [4;5;6] = [1;4;2;5;3;6].
+  simpl. reflexivity. Qed.
+
+Example test_alternate2: 
+  alternate [1] [4;5;6] = [1;4;5;6].
+  simpl. reflexivity. Qed.
+
+Example test_alternate3:
+  alternate [1;2;3] [4] = [1;4;2;3].
+  simpl. reflexivity. Qed.
+
+Example test_alternate4:
+  alternate [] [20;30] = [20;30].
+  simpl. reflexivity. Qed.
+
+(* Bags via Lists *)
+
+(**
+
+A bag (or multiset) is like a set, except that each element can appear multiple times rather than just once. One possible representation for a bag of numbers is as a list. 
+
+**)
+Definition bag := natlist.
+
+(* Bag functions *)
+(*  Complete the following definitions for the functions count, sum, add, and member for bags. *)
+(* why doesn't work with match v with h? *)
+Fixpoint count (v: nat) (s: bag) : nat :=
+  match s with
+  | nil => O
+  | h :: t => match eqb h v with
+            | true => S (count v t)
+            | false => count v t
+            end
+  end.
+
+Example test_count1: count 1 [1;2;3;1;4;1] = 3.
+ reflexivity. Qed.
+Example test_count2: count 6 [1;2;3;1;4;1] = 0.
+ reflexivity. Qed.
+
+
 
 
