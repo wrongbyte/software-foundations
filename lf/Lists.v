@@ -346,10 +346,96 @@ Fixpoint count (v: nat) (s: bag) : nat :=
   end.
 
 Example test_count1: count 1 [1;2;3;1;4;1] = 3.
- reflexivity. Qed.
+ simpl. reflexivity. Qed.
 Example test_count2: count 6 [1;2;3;1;4;1] = 0.
  reflexivity. Qed.
 
 
+Definition sum : bag -> bag -> bag := app.
+
+Example test_sum1: count 1 (sum [1;2;3] [1;4;1]) = 3.
+Proof. reflexivity. Qed.
+
+Definition add (v: nat) (s: bag) : bag :=  v :: s.
+
+Example test_add1: count 1 (add 1 [1;4;1]) = 3.
+Proof. reflexivity. Qed.
+
+Example test_add2: count 5 (add 1 [1;4;1]) = 0.
+Proof. reflexivity. Qed.
+
+Definition member (v : nat) (s : bag) : bool :=
+  negb (eqb (count v s) 0).
+
+Example test_member1: member 1 [1;4;1] = true.
+Proof. reflexivity. Qed.
+(* simpl does nothing above *)
+
+Example test_member2: member 2 [1;4;1] = false.
+Proof. reflexivity. Qed.
+
+
+Fixpoint remove_one (v : nat) (s : bag) : bag :=
+  match s with
+  | nil => nil
+  | h :: t => match eqb h v with
+            | true => t
+            | false => h :: (remove_one v t)
+            end
+  end.
+
+Example test_remove_one1:
+  count 5 (remove_one 5 [2;1;5;4;1]) = 0.
+Proof. reflexivity. Qed.
+
+Example test_remove_one2:
+  count 5 (remove_one 5 [2;1;4;1]) = 0.
+Proof. reflexivity. Qed.
+Example test_remove_one3:
+  count 4 (remove_one 5 [2;1;4;5;1;4]) = 2.
+Proof. reflexivity. Qed.
+Example test_remove_one4:
+  count 5 (remove_one 5 [2;1;5;4;5;1;4]) = 1.
+Proof. reflexivity. Qed.
+
+
+
+Fixpoint remove_all (v:nat) (s:bag) : bag :=
+  match s with
+  | nil => nil
+  | h :: t => match eqb h v with
+            | true => remove_all v t
+            | false => h :: (remove_all v t)
+            end
+  end.
+
+Example test_remove_all1: count 5 (remove_all 5 [2;1;5;4;1]) = 0.
+Proof. reflexivity. Qed.
+
+Example test_remove_all2: count 5 (remove_all 5 [2;1;4;1]) = 0.
+Proof. reflexivity. Qed.
+
+Example test_remove_all3: count 4 (remove_all 5 [2;1;4;5;1;4]) = 2.
+Proof. reflexivity. Qed.
+
+Example test_remove_all4: count 5 (remove_all 5 [2;1;5;4;5;1;4;5;1;4]) = 0.
+Proof. reflexivity. Qed.
+
+(* if we get to the nil, it is because we've "consumed" all elements
+ and as they're contained in the set, it is the true case *)
+Fixpoint subset (s1 : bag) (s2 : bag) : bool :=
+  match s1 with
+  | nil => true
+  | h1::t1 => member h1 s2 && subset t1 (remove_one h1 s2)
+  end.
+
+
+Example test_subset1: subset [1;2] [2;1;4;1] = true.
+Proof. reflexivity. Qed.
+
+Example test_subset2: subset [1;2;2] [2;1;4;1] = false.
+Proof. simpl. reflexivity. Qed.
+
+(* Adding a value to a bag should increase the value's count by one. State that as a theorem and prove it. *)
 
 
