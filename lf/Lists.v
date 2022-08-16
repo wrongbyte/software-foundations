@@ -421,6 +421,22 @@ Proof. reflexivity. Qed.
 Example test_remove_all4: count 5 (remove_all 5 [2;1;5;4;5;1;4;5;1;4]) = 0.
 Proof. reflexivity. Qed.
 
+Fixpoint included (s1: bag) (s2: bag) : bool :=
+  match s1 with
+  | nil => true
+  | h1 :: t1 => match member h1 s2 with
+              | false => false
+              | true => included t1 (remove_one h1 s2)
+              end
+  end.
+
+
+Example test_included1: included [1;2] [2;1;4;1] = true.
+Proof. simpl. reflexivity. Qed.
+
+Example test_included2: included [1;2;2] [2;1;4;1] = false.
+Proof. simpl. reflexivity. Qed.
+
 (* if we get to the nil, it is because we've "consumed" all elements
  and as they're contained in the set, it is the true case *)
 Fixpoint subset (s1 : bag) (s2 : bag) : bool :=
@@ -438,4 +454,12 @@ Proof. simpl. reflexivity. Qed.
 
 (* Adding a value to a bag should increase the value's count by one. State that as a theorem and prove it. *)
 
+Theorem bag_theorem : forall (n: nat) (s: bag),
+  count n (add n s) = S (count n s).
+Proof.
+intros n s.
+simpl.
+rewrite eqb_refl.
+reflexivity. Qed.
 
+(* Reasoning about lists *)
