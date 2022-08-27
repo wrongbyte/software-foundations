@@ -463,3 +463,219 @@ rewrite eqb_refl.
 reflexivity. Qed.
 
 (* Reasoning about lists *)
+
+ Theorem tl_length_pred : forall l:natlist,
+  pred (length l) = length (tl l).
+Proof.
+  intros l. destruct l as [| n l'].
+  - (* l = nil *)
+    reflexivity.
+  - (* l = cons n l' *)
+    reflexivity. Qed.
+
+(* Notice that the as annotation on the destruct tactic here introduces two names, n and l', corresponding to the fact that the cons constructor for lists takes two arguments (the head and tail of the list it is constructing).
+ *)
+
+
+Theorem app_assoc: forall l1 l2 l3 : natlist,
+  (l1 ++ l2) ++ l3 = l1 ++ (l2 ++ l3).
+Proof.
+  intros l1 l2 l3. induction l1 as [| h1 t1 IHl1']. 
+  - simpl. reflexivity.
+  - simpl. rewrite IHl1'. reflexivity.
+  Qed.
+
+(* Reversing a list *)
+
+Fixpoint rev (l: natlist): natlist :=
+  match l with
+  | nil => nil
+  | h :: t => rev t ++ [h] (* a list with h nil *)
+  end.
+
+Example test_rev1: rev [1;2;3] = [3;2;1].
+Proof. reflexivity. Qed.
+Example test_rev2: rev nil = nil.
+Proof. reflexivity. Qed.
+
+(* Proving that reversing a list does
+  not change its length *)
+
+Theorem rev_length_firsttry: forall l : natlist, 
+  length (rev l) = length l.
+Proof.
+  intros l. induction l as [| n l' IHl'].
+  - reflexivity.
+  - simpl. rewrite <- IHl'. Abort.
+(* we get stuck at
+length (rev l' ++ [n]) = S (length (rev l'))
+But we can make an equation to help us to make
+progress.
+*)
+
+(*
+  we must simplify the length (rev l' ++ [n]) part,
+  making it equivalent to S (length (rev l')) in terms
+  of its "structure". we are basically adding the
+  length of two lists, and the result of this operation
+  must be a nat number, which then can be compared to
+  S (length [...]). To state this lemma, we can
+  use induction on lists.
+*)
+Theorem app_length: forall l1 l2: natlist, 
+  length (l1 ++ l2) = (length l1) + (length l2).
+Proof.
+  intros l1 l2.
+  induction l1 as [| h1 t1 IHl1].
+  - reflexivity.
+  - (* length ((h1 :: t1) ++ l2) = length (h1 :: t1) + length l2 *)
+  simpl. rewrite IHl1. reflexivity.
+  Qed.
+
+
+(* todo: make notes about it.*)
+Theorem rev_length : forall l: natlist,
+  length (rev l) = length l.
+Proof.
+  intros l.
+  induction l as [| h t IHl].
+  - reflexivity.
+  - simpl. rewrite app_length.
+    simpl. rewrite IHl. rewrite add_comm.
+    simpl. reflexivity. Qed. 
+
+
+Search (_ + _ = _ + _) inside Induction.
+
+
+Theorem app_nil_r: forall l: natlist,
+  l ++ [] = l.
+Proof.
+  intros l.
+  induction l as [| h t IHl].
+  - reflexivity.
+  - simpl. rewrite IHl. reflexivity.
+Qed.
+
+Theorem rev_app_distr: forall l1 l2: natlist,
+  rev (l1 ++ l2) = rev l2 ++ rev l1.
+Proof.
+  intros l1 l2.
+  induction l1 as [| h1 t1 IHl1].
+  - simpl. rewrite app_nil_r. reflexivity.
+  - simpl. rewrite IHl1. rewrite app_assoc.
+    reflexivity. Qed.
+
+Theorem rev_involutive: forall l: natlist,
+  rev (rev l) = l.
+Proof.
+  intros l.
+  induction l as [| h t IHl].
+  - simpl. reflexivity.
+  - simpl. rewrite rev_app_distr. simpl.
+    rewrite IHl. reflexivity.
+Qed.
+
+Theorem app_assoc4: forall l1 l2 l3 l4: natlist,
+  l1 ++ (l2 ++ (l3 ++ l4)) = ((l1 ++ l2) ++ l3) ++ l4.
+Proof.
+  intros l1 l2 l3 l4.
+  rewrite app_assoc. rewrite app_assoc.
+  reflexivity. Qed.
+
+
+Lemma nonzeros_app: forall l1 l2 : natlist,
+  nonzeros (l1 ++ l2) = (nonzeros l1) ++ (nonzeros l2).
+Proof.
+  intros l1 l2.
+  induction l1 as [| h1 t1 IHl1].
+  - simpl. reflexivity.
+  - destruct h1.
+    + simpl. rewrite IHl1. reflexivity.
+    + simpl. rewrite IHl1. reflexivity.
+  Qed.
+
+
+Fixpoint eqblist (l1 l2: natlist): bool :=
+  match l1, l2 with
+  | [], [] => true
+  | h1::t1, h2::t2 => (eqb h1 h2) && (eqblist t1 t2)
+  | _, _ => false
+  end.
+
+Example test_eqblist1 :
+  (eqblist nil nil = true).
+  simpl. reflexivity. Qed.
+Example test_eqblist2 :
+  eqblist [1;2;3] [1;2;3] = true.
+  simpl. reflexivity. Qed.
+Example test_eqblist3 :
+  eqblist [1;2;3] [1;2;4] = false.
+  simpl. reflexivity. Qed.
+
+Theorem eqblist_refl : forall l:natlist,
+  true = eqblist l l.
+Proof.
+  intros l.
+  induction l as [| h t IHl].
+  - simpl. reflexivity.
+  - simpl.
+    rewrite eqb_refl. rewrite <- IHl.
+    simpl. reflexivity.
+Qed.
+
+
+Theorem count_member_nonzero : forall (s: bag),
+  1 <=? (count 1 (1::s)) = true.
+Proof.
+  intros s.
+  induction s as [| h t ].
+  - simpl. reflexivity.
+  - simpl. reflexivity.
+Qed.
+
+Theorem leb_n_Sn : forall n,
+  n <=? (S n) = true.
+Proof.
+  induction n as [| n' IHn'].
+  - reflexivity.
+  - simpl. rewrite IHn'. reflexivity.
+Qed.
+
+Theorem remove_does_not_increase_count:
+  forall (s: bag), (count 0 (remove_one 0 s)) <=? (count 0 s) = true.
+Proof.
+  intros s.
+  induction s as [| h t IHs].
+  - simpl. reflexivity.
+  - destruct h as [| n'].
+    + simpl. rewrite leb_n_Sn. reflexivity.
+    + simpl. rewrite IHs. reflexivity.
+Qed.
+
+(* Proof that every involution is injective *)
+(* An injective function is one-to-one: 
+  it maps distinct inputs to distinct outputs, 
+  without any collisions.  *)
+Theorem involution_injective : forall (f : nat -> nat),
+  (forall n : nat, n = f (f n)) ->
+  (forall n1 n2 : nat, f n1 = f n2 -> n1 = n2).
+Proof.
+  intros f hyp_involutive_f n1 n2 n1_eq_n2.
+  rewrite hyp_involutive_f.
+  rewrite <- n1_eq_n2.
+  rewrite <- hyp_involutive_f.
+  reflexivity.
+Qed.
+
+(* Proof that rev is injective *)
+Theorem rev_injective: forall (l1 l2 : natlist),
+  rev l1 = rev l2 -> l1 = l2.
+Proof.
+  intros l1 l2 revl1_eq_revl2.
+  rewrite <- rev_involutive.
+  rewrite <- revl1_eq_revl2.
+  rewrite rev_involutive.
+  reflexivity.
+Qed.
+
