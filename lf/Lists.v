@@ -753,6 +753,88 @@ Proof.
   - reflexivity.
 Qed.
 
+End NatList.
+
+(* partial map data type, analogous to the map or
+  dictionary data structures found in most programming
+  languages *)
+
+Inductive id : Type :=
+  | Id (n : nat).
+
+Definition eqb_id (x1 x2 : id) :=
+  match x1, x2 with
+  | Id n1, Id n2 => n1 =? n2
+  end.
+
+Theorem eqb_id_refl : forall x, eqb_id x x = true.
+Proof.
+  intros x. (* we must destruct id, which is wrapped in its constructor *)
+  destruct x as [n].
+  simpl. rewrite eqb_refl. reflexivity.
+Qed.
+
+Module PartialMap.
+Export NatList.
+
+Inductive partial_map : Type :=
+  | empty
+  | record (i : id) (v : nat) (m: partial_map).
+
+
+(* The update function overrides the entry for a given key
+ in a partial map by shadowing it with a new one 
+ (or simply adds a new entry if the given key is not 
+ already present).  *)
+
+Definition update (d : partial_map) (x: id) (value: nat)
+  : partial_map :=
+  record x value d.
+
+
+Fixpoint find (x: id) (d: partial_map) : natoption :=
+  match d with
+  | empty => None
+  | record y v d' => if eqb_id x y
+                     then Some v
+                     else find x d'
+  end.
+
+
+Theorem update_eq: forall 
+  (d: partial_map) (x: id) (v: nat),
+  find x (update d x v) = Some v.
+Proof.
+  intros d x v.
+  destruct x as [n]. simpl.
+  rewrite eqb_refl.
+  reflexivity.
+Qed. 
+
+
+Theorem update_neq : forall 
+  (d : partial_map) (x y : id) (o : nat),
+  eqb_id x y = false -> find x (update d y o) = find x d.
+Proof.
+  intros d x y o hyp_xy_neq.
+  simpl. rewrite hyp_xy_neq. reflexivity.
+Qed.
+
+Inductive baz : Type :=
+  | Baz1 (x: baz)
+  | Baz2 (y: baz) (b: bool).
+
+(* How many elements does the type baz have?
+
+  It is impossible to create an element of type baz
+  because, in order to create an element of type baz,
+  it is necessary to already have a baz element.
+  So, we have two constructors, but zero possible
+  elements.
+
+ *)
+
+
 
 
 
