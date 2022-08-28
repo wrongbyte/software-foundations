@@ -679,3 +679,80 @@ Proof.
   reflexivity.
 Qed.
 
+(* Options *)
+(*function that returns the nth element of some list*)
+
+(* as we have nat as the return type, we must return a 
+  number even if we are passing an empty list to this
+  function. however, the list may not have enough
+  elements and therefore, we would have to
+  return an arbitrary number. *)
+Fixpoint nth_bad (l: natlist) (n: nat) : nat :=
+  match l with
+  | nil => 42
+  | a :: l' => match n with
+              | 0 => a
+              | S n' => nth_bad l' n'
+              end
+  end.
+
+Inductive natoption : Type :=
+  | Some (n: nat)
+  | None.
+
+Fixpoint nth_error (l: natlist) (n: nat) : natoption :=
+  match l with
+  | nil => None
+  | a :: l' => match n with
+              | 0 => Some a
+              | S n' => nth_error l' n'
+              end
+  end.
+
+Example test_nth_error1 : nth_error [4;5;6;7] 0 = Some 4.
+Proof. reflexivity. Qed.
+Example test_nth_error2 : nth_error [4;5;6;7] 3 = Some 7.
+Proof. reflexivity. Qed.
+Example test_nth_error3 : nth_error [4;5;6;7] 9 = None.
+Proof. reflexivity. Qed.
+
+
+Definition option_elim (d: nat) (o: natoption) : nat :=
+  match o with
+  | Some n' => n'
+  | None => d
+  end.
+
+(*
+* Definition hd (default : nat) (l : natlist) : nat :=
+*  match l with
+*  | nil ⇒ default
+*  | h :: t ⇒ h
+*  end.
+*)
+
+Definition hd_error (l : natlist) : natoption :=
+  match l with
+  | nil => None
+  | h :: t => Some h
+  end.
+
+Example test_hd_error1 : hd_error [] = None.
+Proof. reflexivity. Qed.
+Example test_hd_error2 : hd_error [1] = Some 1.
+Proof. reflexivity. Qed.
+Example test_hd_error3 : hd_error [5;6] = Some 5.
+Proof. reflexivity. Qed.
+
+Theorem option_elim_hd: forall (l: natlist) (default: nat),
+  hd default l = option_elim default (hd_error l).
+Proof.
+  intros l default.
+  induction l as [| h t IHl'].
+  - reflexivity.
+  - reflexivity.
+Qed.
+
+
+
+
