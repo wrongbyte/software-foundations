@@ -820,6 +820,8 @@ Proof.
   simpl. rewrite hyp_xy_neq. reflexivity.
 Qed.
 
+End PartialMap.
+
 Inductive baz : Type :=
   | Baz1 (x: baz)
   | Baz2 (y: baz) (b: bool).
