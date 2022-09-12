@@ -250,3 +250,97 @@ Proof.
     rewrite IHl. reflexivity.
 Qed.
 
+(* Polymorphic Pairs or products *)
+Inductive prod (X Y : Type) : Type :=
+  | pair (x : X) (y: Y).
+
+Arguments pair {X} {Y}.
+
+Notation "( x , y )" := (pair x y).
+
+Notation "X * Y" := (prod X Y) : type_scope.
+
+(* (x,y) is a value built from two other values, while
+  x*y is a type built from two other types. *)
+
+
+Definition fst {X Y : Type} (p: X * Y) : X :=
+  match p with 
+  | (x, y) => x
+  end.
+
+Definition snd {X Y : Type} (p : X * Y) : Y :=
+  match p with
+  | (x, y) => y
+  end.
+
+(* zip takes two lists and combine them
+  into a list of pairs *)
+
+Fixpoint combine {X Y : Type} (lx : list X) (ly : list Y)
+    : list (X*Y) :=
+  match lx, ly with
+  | [], _ => []
+  | _, [] => []
+  | x :: tx, y :: ty => (x, y) :: (combine tx ty)
+  end.
+
+Check combine.
+Compute (combine [1;2] [false;false;true;true]).
+
+(* split takes a list of pairs and returns a pair
+  of lists. it is also called unzip *)
+
+Fixpoint split {X Y : Type} (l: list (X*Y)) : (list X) * (list Y) :=
+  match l with
+  | [] => ([], [])
+  | (x, y) :: l' => match (split l') with
+                    | (x', y') => (x::x', y::y')
+                    end
+  end.
+
+Example test_split:
+  split [(1,false);(2,false)] = ([1;2],[false;false]).
+Proof.
+  reflexivity. Qed.
+
+
+(* Polymorphic Options *)
+Module OptionPlayground.
+
+Inductive option (X: Type) : Type :=
+  | Some (x : X)
+  | None.
+
+Arguments Some {X}.
+Arguments None {X}.
+
+End OptionPlayground.
+
+Fixpoint nth_error {X : Type} (l : list X) (n : nat) :=
+  match l with
+  | nil => None
+  | a :: l' => match n with
+              | O => Some a
+              | S n' => nth_error l' n'
+              end
+  end.
+
+Example test_nth_error1 : nth_error [4;5;6;7] 0 = Some 4.
+Proof. reflexivity. Qed.
+Example test_nth_error2 : nth_error [[1];[2]] 1 = Some [2].
+Proof. reflexivity. Qed.
+Example test_nth_error3 : nth_error [true] 2 = None.
+Proof. reflexivity. Qed.
+
+Definition hd_error {X : Type} (l : list X) : option X :=
+  match l with
+  | nil => None
+  | h :: t => Some h
+  end.
+
+Check @hd_error : forall X : Type, list X -> option X.
+Example test_hd_error1 : hd_error [1;2] = Some 1.
+Proof. reflexivity. Qed.
+Example test_hd_error2 : hd_error [[1];[2]] = Some [1].
+Proof. reflexivity. Qed.
