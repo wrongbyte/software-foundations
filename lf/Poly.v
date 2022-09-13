@@ -344,3 +344,70 @@ Example test_hd_error1 : hd_error [1;2] = Some 1.
 Proof. reflexivity. Qed.
 Example test_hd_error2 : hd_error [[1];[2]] = Some [1].
 Proof. reflexivity. Qed.
+
+(* Functions as Data *)
+Definition doit3times {X : Type} (f: X->X) (n : X): X :=
+  f (f (f n)).
+(* applies f three times to some value n *)
+
+ Fixpoint filter {X:Type} (test: X->bool) (l:list X) : list X :=
+  match l with
+  | [] => []
+  | h :: t =>
+    if test h then h :: (filter test t)
+    else filter test t
+  end.
+
+Example test_filter1: filter even [1;2;3;4] = [2;4].
+Proof. reflexivity. Qed.
+
+Definition length_is_1 {X : Type} (l : list X) : bool :=
+  (length l) =? 1.
+Example test_filter2:
+    filter length_is_1
+           [ [1; 2]; [3]; [4]; [5;6;7]; []; [8] ]
+  = [ [3]; [4]; [8] ].
+Proof. reflexivity. Qed.
+
+Definition countoddmembers' (l:list nat) : nat :=
+  length (filter odd l).
+Example test_countoddmembers'1: countoddmembers' [1;0;3;1;4;5] = 4.
+Proof. reflexivity. Qed.
+Example test_countoddmembers'2: countoddmembers' [0;2;4] = 0.
+Proof. reflexivity. Qed.
+Example test_countoddmembers'3: countoddmembers' nil = 0.
+Proof. reflexivity. Qed.
+
+Example test_anon_fun':
+  doit3times (fun n => n * n) 2 = 256.
+Proof. reflexivity. Qed.
+
+Definition filter_even_gt7 (l : list nat) : list nat :=
+  filter (fun n => (7 <=? n) && even n) l.
+
+Example test_filter_even_gt7_1 :
+  filter_even_gt7 [1;2;6;9;10;3;12;8] = [10;12;8].
+Proof. reflexivity. Qed.
+Example test_filter_even_gt7_2 :
+  filter_even_gt7 [5;2;6;19;129] = [].
+Proof. reflexivity. Qed. 
+
+Definition partition {X : Type}
+                     (test: X -> bool)
+                     (l : list X)
+                   : list X * list X :=
+(filter test l, filter (fun x => negb (test x)) l).
+(* we create a pair with the resulting lists
+  from applying filter with test to each element
+  and from applying filter with the negb of test
+  to each element of the list (using an anonymous
+  function 
+*)
+
+
+Example test_partition1: partition odd [1;2;3;4;5] = ([1;3;5], [2;4]).
+Proof. reflexivity. Qed.
+
+Example test_partition2: partition (fun x => false) [5;9;0] = ([], [5;9;0]).
+Proof. reflexivity. Qed.
+
