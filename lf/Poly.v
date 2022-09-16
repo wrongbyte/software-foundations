@@ -411,3 +411,139 @@ Proof. reflexivity. Qed.
 Example test_partition2: partition (fun x => false) [5;9;0] = ([], [5;9;0]).
 Proof. reflexivity. Qed.
 
+(* Map *)
+Fixpoint map {X Y : Type} (f: X->Y) (l : list X) : list Y :=
+  match l with
+  | [] => []
+  | h :: t => (f h) :: (map f t)
+  end.
+
+
+Example test_map1: map (fun x => plus 3 x) [2;0;2] = [5;3;5].
+Proof. reflexivity. Qed.
+
+
+(* The element types of the input and output lists need not
+   be the same, since map takes two type arguments, X and Y. 
+*)
+
+Example test_map2:
+  map odd [2;1;2;5] = [false;true;false;true].
+Proof. reflexivity. Qed.
+
+(*
+  It can even be applied to a list of numbers and a 
+  function from numbers to lists of booleans to yield
+  a list of lists of booleans: 
+*)
+
+ Example test_map3:
+    map (fun n => [even n;odd n]) [2;1;2;5]
+  = [[true;false];[false;true];[true;false];[false;true]].
+Proof. reflexivity. Qed.
+
+(* map and rev are commutative *)
+
+(* Auxiliar theorem: distributive on map app *)
+
+(* both have type X as this is the type of the input list. 
+   we apply a function X->Y to each element of each list, so
+   in the end we append two lists of type Y.*)
+Theorem map_app_distr: forall (X Y : Type) (f: X -> Y) (l1 l2: list X),
+  map f (l1 ++ l2) = map f l1 ++ map f l2.
+Proof.
+  intros X Y f l1 l2.
+  induction l1 as [| h1 t1 IHl1].
+    - reflexivity.
+    - simpl. rewrite IHl1. reflexivity.
+Qed.
+
+Theorem map_rev : forall (X Y : Type) (f: X -> Y) (l: list X),
+  map f (rev l) = rev (map f l).
+Proof.
+  intros X Y f l.
+  induction l as [| h t IHl].
+  - reflexivity.
+  - simpl. rewrite <- IHl. rewrite map_app_distr.
+    simpl. reflexivity.
+Qed.   
+
+(* flat_map: a map that uses a function of type X->list Y *)
+
+Fixpoint flat_map {X Y: Type} (f: X -> list Y) (l: list X) : list Y :=
+  match l with 
+  | [] => []
+  | h :: t => (f h) ++ (flat_map f t)
+  end.
+
+Example test_flat_map1:
+  flat_map (fun n => [n;n;n]) [1;5;4]
+  = [1; 1; 1; 5; 5; 5; 4; 4; 4].
+Proof. reflexivity. Qed.
+
+Definition option_map {X Y : Type} (f : X -> Y) (xo : option X)
+                      : option Y :=
+  match xo with
+  | None => None
+  | Some x => Some (f x)
+  end.
+
+
+(* Fold *)
+ Fixpoint fold {X Y: Type} (f : X->Y->Y) (l : list X) (b : Y)
+                         : Y :=
+  match l with
+  | nil => b
+  | h :: t => f h (fold f t b)
+  end.
+
+Check (fold andb) : list bool -> bool -> bool.
+Example fold_example1 :
+  fold mult [1;2;3;4] 1 = 24.
+Proof. reflexivity. Qed.
+
+Example fold_example2 :
+  fold andb [true;true;false;true] true = false.
+Proof. reflexivity. Qed.
+
+Example fold_example3 :
+  fold app [[1];[];[2;3];[4]] [] = [1;2;3;4].
+Proof. reflexivity. Qed.
+
+(* functions that construct functions *)
+
+Definition constfun {X: Type} (x: X) : nat -> X :=
+  fun (k: nat) => x.
+
+(* ftrue is built from constfun *)
+Definition ftrue := constfun true.
+
+Example constfun_example1 : ftrue 0 = true.
+Proof. reflexivity. Qed.
+
+Example constfun_example2 : (constfun 5) 99 = 5.
+Proof. reflexivity. Qed.
+
+Check plus: nat -> nat -> nat.
+
+(*
+  The function "plus" by itself has three binary operators.
+  As it is right-associative, it is the same as writing
+  nat -> (nat -> nat).
+  Plus is a one-argument function that takes nat and returns
+  a one-argument function that takes another nat and returns
+  a nat.
+  
+  Basically: one argument -> function (partial application)
+  two arguments -> number 
+*)
+
+Definition plus3 := plus 3.
+Check plus3 : nat -> nat.
+Example test_plus3 : plus3 4 = 7.
+Proof. reflexivity. Qed.
+Example test_plus3' : doit3times plus3 0 = 9.
+Proof. reflexivity. Qed.
+Example test_plus3'' : doit3times (plus 3) 0 = 9.
+Proof. reflexivity. Qed.
+
