@@ -547,3 +547,75 @@ Proof. reflexivity. Qed.
 Example test_plus3'' : doit3times (plus 3) 0 = 9.
 Proof. reflexivity. Qed.
 
+
+(* Additional exercises *)
+Module Exercises.
+
+Definition fold_length {X : Type} (l : list X) : nat :=
+  fold (fun _ n => S n) l 0.
+Example test_fold_length1 : fold_length [4;7;0] = 3.
+Proof. reflexivity. Qed.
+
+Theorem fold_length_correct : forall X (l : list X),
+  fold_length l = length l.
+Proof.
+  intros X l.
+  induction l as [| h t IHl].
+  - reflexivity.
+  - simpl. rewrite <- IHl. reflexivity.
+Qed.
+
+(* fold applies a binary operator between every two elements of a list *)
+(* the return of our anonymous function should be a list *)
+
+Definition fold_map {X Y: Type} (f: X -> Y) (l: list X) : list Y :=
+  fold (fun h t => f h::t ) l [].
+
+
+Theorem fold_map_correct : forall X Y (f: X -> Y) (l: list X),
+  fold_map f l = map f l.
+Proof.
+  intros.
+  induction l as [| h t IHl].
+  - simpl. reflexivity.
+  - simpl. rewrite <- IHl. reflexivity.
+Qed.
+
+
+(* Currying *)
+Definition prod_curry {X Y Z : Type}
+  (f : X * Y -> Z) (x : X) (y : Y) : Z := f (x, y).
+
+Check prod_curry.
+
+(* To uncurry, we need to "destruct" the pair from
+  p. *)
+Definition prod_uncurry {X Y Z : Type}
+  (f : X -> Y -> Z) (p : X * Y) : Z :=
+  match p with
+  | (x, y) => f x y
+  end.
+
+Check @prod_curry.
+Check @prod_uncurry.
+
+Theorem uncurry_curry : forall (X Y Z : Type)
+                        (f : X -> Y -> Z)
+                        x y,
+  prod_curry (prod_uncurry f) x y = f x y.
+Proof.
+  reflexivity.
+Qed.
+
+Theorem curry_uncurry : forall (X Y Z : Type)
+                        (f : (X * Y) -> Z) (p : X * Y),
+  prod_uncurry (prod_curry f) p = f p.
+Proof.
+  intros.
+  destruct p as [x y].
+  reflexivity.
+Qed.
+
+
+
+
