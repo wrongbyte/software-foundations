@@ -1,4 +1,4 @@
-### Currying and uncurrying
+## Currying and uncurrying
 
 If we take plus, for example, and check its type, we will see:
 `Check plus : nat → nat → nat.`
@@ -32,3 +32,33 @@ Note that, in order to return this function applied to both arguments of the pro
 Therefore, in both definitions, we are essentially doing the inverse: if we want to curry a function, we take its argument (that sould be a pair) and apply it as if each member of the pair was one entity.
 While uncurrying, we do the opposite: we consider the two arguments received as a pair and apply the function to them.
 
+
+### Proofs
+```coq
+Theorem uncurry_curry : forall (X Y Z : Type)
+                        (f : X -> Y -> Z)
+                        x y,
+  prod_curry (prod_uncurry f) x y = f x y.
+Proof.
+  reflexivity.
+Qed.
+
+Theorem curry_uncurry : forall (X Y Z : Type)
+                        (f : (X * Y) -> Z) (p : X * Y),
+  prod_uncurry (prod_curry f) p = f p.
+Proof.
+  intros.
+  destruct p as [x y].
+  reflexivity.
+Qed.
+```
+
+The first case can be easily proved when reducing the functions, so that we only need `reflexivity`.
+In the second proof, however, we get
+```
+p : X * Y
+______________________________________(1/1)
+prod_uncurry (prod_curry f) p = f p
+```
+
+as part of the goal. We need to use `destruct` in this case.
