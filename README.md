@@ -8,9 +8,9 @@
 
 ## Table of solutions
 
-| Section Title   | Coq File                           | Status    | Updated at |
-|-----------------|------------------------------------|:---------:|-----------:|
-| Basics          | [Basics.v](./lf/Basics.v)        | Solved    | 2022/06/23 |
-| Induction       | [Induction.v](./lf/Induction.v)  | Solved    | 2016/07/04 |
-| Lists           | [Lists.v](./lf/Lists.v)          | Solved    | 2016/08/28 |
-| Poly            | [Poly.v](./lf/Poly.v)            | In progress    |  |
+| Section Title   | Coq File                           | Status    |
+|-----------------|------------------------------------|:---------:|
+| Basics          | [Basics.v](./lf/Basics.v)        | Solved    |
+| Induction       | [Induction.v](./lf/Induction.v)  | Solved    |
+| Lists           | [Lists.v](./lf/Lists.v)          | Solved    |
+| Poly            | [Poly.v](./lf/Poly.v)            | In progress    |
